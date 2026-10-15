@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b0714">
+<title>Quiz Clash — Solo Quiz Challenge</title>
+<style>
+:root{--bg:#0b0714;--panel:#151023;--panel2:#1d1530;--purple:#a855f7;--pink:#ec4899;--text:#f8f5ff;--muted:#b8accb;--good:#4ade80;--bad:#fb7185}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#24113e 0,#0b0714 55%);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
+main{max-width:760px;margin:auto;padding:22px 15px 48px}.brand{display:flex;align-items:center;gap:12px;margin:8px 0 22px}.logo{width:48px;height:48px;border-radius:15px;display:grid;place-items:center;background:linear-gradient(135deg,var(--purple),var(--pink));font-size:25px;box-shadow:0 0 28px #a855f755}.brand h1{font-size:23px;margin:0}.brand p{margin:2px 0 0;color:var(--muted);font-size:13px}
+.card{background:#151023ed;border:1px solid #ffffff17;border-radius:22px;padding:20px;margin:14px 0;box-shadow:0 12px 38px #0004}.eyebrow{color:#d8b4fe;text-transform:uppercase;letter-spacing:.14em;font-size:11px;font-weight:800}.hero h2{font-size:clamp(27px,6vw,42px);line-height:1.08;margin:9px 0 12px}.hero p,.muted{color:var(--muted);line-height:1.5}.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1;min-width:140px}
+label{display:block;color:var(--muted);font-size:13px;margin:13px 0 6px}input,select{width:100%;padding:13px 14px;border-radius:12px;border:1px solid #ffffff25;background:#0d0917;color:var(--text);font:inherit;outline:none}input:focus,select:focus{border-color:var(--purple)}
+button{font:inherit;font-weight:750;border:0;border-radius:13px;padding:13px 16px;cursor:pointer;color:white;background:linear-gradient(110deg,#9333ea,#db2777);box-shadow:0 6px 20px #9333ea2b}button:disabled{opacity:.45;cursor:not-allowed}button.secondary{background:#ffffff10;border:1px solid #ffffff20;box-shadow:none}button.full{width:100%;margin-top:14px}.tiny{font-size:12px;color:var(--muted)}.hidden{display:none!important}
+.pills{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.pill{border:1px solid #ffffff20;background:#ffffff0a;color:#e9d5ff;border-radius:99px;padding:7px 11px;font-size:12px}
+.progress{height:7px;background:#ffffff15;border-radius:99px;overflow:hidden;margin:13px 0}.progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--purple),var(--pink));transition:width .25s}
+.question{font-size:22px;font-weight:800;line-height:1.3;margin:12px 0 18px}.answers{display:grid;gap:10px}.answer{background:#211832;border:1px solid #ffffff1c;text-align:left;box-shadow:none;padding:14px}.answer.selected{border-color:#c084fc;background:#3b2058}.answer.correct{border-color:var(--good);background:#123326}.answer.wrong{border-color:var(--bad);background:#401927}.topline{display:flex;justify-content:space-between;gap:10px;align-items:center;color:var(--muted);font-size:13px}.score{font-size:48px;font-weight:900;letter-spacing:-2px}.leader{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #ffffff12}.rank{width:34px;height:34px;display:grid;place-items:center;border-radius:11px;background:#ffffff12;font-weight:900}.leader .who{flex:1;min-width:0}.leader .who b{display:block;overflow-wrap:anywhere}.leader .who small{color:var(--muted)}.points{font-weight:900;color:#d8b4fe}.notice{padding:12px 14px;border-radius:12px;background:#2a1b3d;color:#e9d5ff;font-size:13px;line-height:1.45}.error{color:#fecdd3}.footer{text-align:center;color:#887b9b;font-size:12px;padding:16px}
+</style>
+</head>
+<body>
+<main>
+  <header class="brand"><div class="logo">✦</div><div><h1>QUIZ CLASH</h1><p>Solo Quiz Challenge · play at your own pace</p></div></header>
+  <section id="home">
+    <div class="card hero"><div class="eyebrow">10 questions · mixed difficulty</div><h2>Ready to test your brain?</h2><p>Play on your own phone, earn points, then compare your best score with friends on the online leaderboard.</p><div class="pills"><span class="pill">🧠 General knowledge</span><span class="pill">🎬 Movies & music</span><span class="pill">🧩 Riddles</span><span class="pill">🔬 Science</span><span class="pill">⚽ Sports</span></div></div>
+    <div class="card">
+      <h3>Set up your challenge</h3>
+      <label for="playerName">Your display name</label><input id="playerName" maxlength="20" placeholder="e.g. PurplePenguin">
+      <label for="category">Choose a category</label><select id="category"><option value="Mixed">🎲 Mixed categories</option><option>General Knowledge</option><option>Science</option><option>Movies & Music</option><option>Sports</option><option>Riddles</option></select>
+      <button id="startBtn" class="full">Start 10-question quiz →</button>
+      <p class="tiny">No one needs to be online at the same time. Your score is submitted to the shared leaderboard after the quiz.</p>
+    </div>
+    <div class="card"><div class="topline"><h3 style="margin:0;color:white">🏆 Friends leaderboard</h3><button class="secondary" id="refreshBoard" style="padding:8px 11px">Refresh</button></div><div id="leaderboard" class="muted" style="margin-top:12px">Connect Firebase to load scores.</div></div>
+    <div class="notice" id="connectionNotice">Firebase setup needed: add your web config to this file, enable Anonymous sign-in, and publish secure-enough prototype rules before testing.</div>
+  </section>
+
+  <section id="quiz" class="hidden">
+    <div class="card"><div class="topline"><span id="categoryLabel">MIXED</span><span id="questionCount">Question 1 of 10</span></div><div class="progress"><span id="progressBar"></span></div><div class="question" id="questionText"></div><div class="answers" id="answers"></div><p id="feedback" class="muted"></p><button id="nextBtn" class="full" disabled>Next question →</button></div>
+  </section>
+
+  <section id="result" class="hidden">
+    <div class="card hero"><div class="eyebrow">Challenge complete</div><h2 id="resultTitle">Nice work!</h2><div class="score"><span id="finalScore">0</span><span style="font-size:18px;color:var(--muted)"> / 1000</span></div><p id="resultMessage"></p><div class="notice" id="submitStatus">Saving your score…</div><button id="playAgain" class="full">Play again ↻</button><button id="backHome" class="full secondary">Back to home</button></div>
+    <div class="card"><h3>🏆 Friends leaderboard</h3><div id="resultBoard" class="muted">Loading…</div></div>
+  </section>
+  <div class="footer">Made for friendly competition · Play fair, have fun 💜</div>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>
+/* STEP 1: Replace the placeholder values below with the exact values from
+   Firebase Console → Project settings → Your apps → SDK setup and configuration → Config. */
+const firebaseConfig = {
+  apiKey: "PASTE_YOUR_FIREBASE_API_KEY",
+  authDomain: "PASTE_YOUR_PROJECT_ID.firebaseapp.com",
+  databaseURL: "PASTE_YOUR_DATABASE_URL",
+  projectId: "PASTE_YOUR_PROJECT_ID",
+  appId: "PASTE_YOUR_APP_ID"
+};
+
+const BANK = [
+ {c:"General Knowledge",d:1,q:"Which planet is known as the Red Planet?",a:["Venus","Mars","Jupiter","Mercury"],k:1,e:"Mars looks reddish because iron minerals in its soil have oxidized."},
+ {c:"Science",d:1,q:"What gas do plants absorb from the air during photosynthesis?",a:["Oxygen","Nitrogen","Carbon dioxide","Helium"],k:2,e:"Plants use carbon dioxide, water, and light to make sugars."},
+ {c:"Movies & Music",d:2,q:"Which instrument usually has 88 keys on a standard modern version?",a:["Violin","Flute","Piano","Trumpet"],k:2,e:"A standard full-size piano typically has 88 keys."},
+ {c:"Sports",d:1,q:"How many players from one football (soccer) team are normally on the field at kickoff?",a:["9","10","11","12"],k:2,e:"A team normally starts with 11 players, including the goalkeeper."},
+ {c:"Riddles",d:2,q:"What has hands but cannot clap?",a:["A clock","A tree","A book","A cloud"],k:0,e:"A clock has hour and minute hands."},
+ {c:"General Knowledge",d:2,q:"Which is the largest ocean on Earth?",a:["Atlantic Ocean","Indian Ocean","Arctic Ocean","Pacific Ocean"],k:3,e:"The Pacific is the largest and deepest ocean."},
+ {c:"Science",d:2,q:"What is the chemical symbol for gold?",a:["Ag","Au","Gd","Go"],k:1,e:"Au comes from the Latin word aurum."},
+ {c:"Movies & Music",d:3,q:"In music, how many semitones are there in one octave in equal temperament?",a:["8","10","12","14"],k:2,e:"An octave spans 12 semitones in the standard equal-tempered system."},
+ {c:"Sports",d:2,q:"In tennis, what score comes after 30 in a standard point sequence?",a:["35","40","45","Advantage"],k:1,e:"The usual sequence is love, 15, 30, 40, then game (subject to deuce)."},
+ {c:"Riddles",d:2,q:"The more you take, the more you leave behind. What are they?",a:["Photos","Footsteps","Coins","Breaths"],k:1,e:"Each step you take can leave another footprint."},
+ {c:"General Knowledge",d:3,q:"Which country is home to the ancient city of Petra?",a:["Egypt","Jordan","Greece","Turkey"],k:1,e:"Petra is an archaeological city in southern Jordan."},
+ {c:"Science",d:3,q:"Which part of a cell contains most of its genetic material in humans?",a:["Nucleus","Cell membrane","Ribosome","Golgi apparatus"],k:0,e:"Most human cellular DNA is in the nucleus, with a small amount in mitochondria."},
+ {c:"Movies & Music",d:1,q:"Which family of instruments does a saxophone belong to?",a:["Brass","Woodwind","Strings","Percussion"],k:1,e:"The saxophone is a woodwind instrument because it uses a reed."},
+ {c:"Sports",d:3,q:"How long is a standard outdoor athletics track lap in lane 1?",a:["200 metres","300 metres","400 metres","500 metres"],k:2,e:"A standard outdoor track is 400 metres per lap in lane 1."},
+ {c:"Riddles",d:3,q:"I speak without a mouth and hear without ears. I have no body, but I come alive with wind. What am I?",a:["An echo","A shadow","A whistle","A river"],k:0,e:"An echo repeats sound without having a body or mouth."},
+ {c:"General Knowledge",d:1,q:"Which language is primarily spoken in Brazil?",a:["Spanish","Portuguese","French","Italian"],k:1,e:"Portuguese is Brazil's official language."},
+ {c:"Science",d:1,q:"What force pulls objects toward Earth?",a:["Magnetism","Friction","Gravity","Electricity"],k:2,e:"Gravity attracts objects with mass toward one another."},
+ {c:"Movies & Music",d:2,q:"Which term means the speed of music?",a:["Tempo","Pitch","Harmony","Timbre"],k:0,e:"Tempo describes how fast or slow music is played."},
+ {c:"Sports",d:1,q:"In basketball, how many points is a successful free throw worth?",a:["1","2","3","4"],k:0,e:"A free throw is worth one point."},
+ {c:"Riddles",d:1,q:"What gets wetter as it dries?",a:["A towel","Sand","A candle","A sponge cake"],k:0,e:"A towel absorbs water from other things as it dries them."}
+];
+
+let app=null, auth=null, db=null, uid=null, firebaseReady=false;
+const $=id=>document.getElementById(id);
+function configLooksReal(){return firebaseConfig.apiKey && !firebaseConfig.apiKey.startsWith("PASTE_") && firebaseConfig.projectId && !firebaseConfig.projectId.startsWith("PASTE_") && firebaseConfig.databaseURL && !firebaseConfig.databaseURL.startsWith("PASTE_") && firebaseConfig.appId && !firebaseConfig.appId.startsWith("PASTE_");}
+async function initFirebase(){
+ if(!configLooksReal()){ $("connectionNotice").textContent="Firebase config not added yet. You can still try the quiz locally, but leaderboard saving needs your real Firebase config."; return; }
+ try{
+  app=firebase.apps.length?firebase.app():firebase.initializeApp(firebaseConfig);
+  auth=firebase.auth(); db=firebase.database();
+  const cred=await auth.signInAnonymously(); uid=cred.user.uid; firebaseReady=true;
+  $("connectionNotice").textContent="✅ Connected to Firebase. Your scores can be saved to the friends leaderboard.";
+  await loadBoard();
+ }catch(e){$("connectionNotice").innerHTML='<span class="error">Firebase connection error: '+escapeHtml(e.message)+' Check Anonymous sign-in, databaseURL, and database rules.</span>';}
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function shuffle(arr){let a=arr.slice();for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a;}
+function makeQuiz(category){
+ let pool=category==="Mixed"?BANK.slice():BANK.filter(x=>x.c===category);
+ // Ensure 10 questions: use requested category first, then fill with other categories if needed.
+ if(pool.length<10){pool=pool.concat(shuffle(BANK.filter(x=>!pool.includes(x))).slice(0,10-pool.length));}
+ return shuffle(pool).slice(0,10);
+}
+let quiz=[],index=0,score=0,answered=false,player="";
+function show(section){["home","quiz","result"].forEach(s=>$(s).classList.toggle("hidden",s!==section));window.scrollTo({top:0,behavior:"smooth"});}
+$("startBtn").addEventListener("click",()=>{
+ player=$("playerName").value.trim().slice(0,20)||"Player";
+ const category=$("category").value;quiz=makeQuiz(category);index=0;score=0;show("quiz");renderQuestion();
+});
+function renderQuestion(){
+ answered=false;const q=quiz[index];$("categoryLabel").textContent=q.c.toUpperCase()+" · "+["","EASY","MEDIUM","HARD"][q.d];$("questionCount").textContent=`Question ${index+1} of 10`; $("progressBar").style.width=`${index/10*100}%`;$("questionText").textContent=q.q;$("feedback").textContent="Choose one answer.";$("nextBtn").disabled=true;$("nextBtn").textContent=index===9?"See my score →":"Next question →";$("answers").innerHTML="";
+ q.a.forEach((a,i)=>{const b=document.createElement("button");b.className="answer";b.textContent=String.fromCharCode(65+i)+". "+a;b.addEventListener("click",()=>chooseAnswer(i));$("answers").appendChild(b);});
+}
+function chooseAnswer(choice){
+ if(answered)return;answered=true;const q=quiz[index];const buttons=[...$("answers").children];buttons.forEach((b,i)=>{b.disabled=true;if(i===q.k)b.classList.add("correct");else if(i===choice)b.classList.add("wrong");});
+ if(choice===q.k){score+=100*q.d; $("feedback").textContent="Correct! +"+(100*q.d)+" points. "+q.e;}else{$("feedback").textContent="Not quite. "+q.e;}
+ $("nextBtn").disabled=false;$("progressBar").style.width=`${(index+1)/10*100}%`;
+}
+$("nextBtn").addEventListener("click",async()=>{if(!answered)return;if(index<9){index++;renderQuestion();}else await finishQuiz();});
+async function finishQuiz(){
+ show("result");$("finalScore").textContent=score;$("resultTitle").textContent=score>=2000?"Quiz master! 🔥":score>=1200?"Nice brainpower! ✨":"Challenge complete! 💜";$("resultMessage").textContent=`${player}, you got ${score/100} out of 30 answer-points worth of difficulty-weighted scoring. Play again to beat your best!`;
+ $("submitStatus").textContent=firebaseReady?"Saving your score…":"Quiz finished locally. Connect Firebase to save scores online.";
+ if(firebaseReady){
+  try{
+   const safeName=player.replace(/[.#$/\[\]]/g,"").slice(0,20)||"Player";
+   const ref=db.ref("quizScores/"+uid);
+   const old=(await ref.once("value")).val();
+   const best=Math.max(score,old&&Number(old.bestScore)||0);
+   await ref.set({uid,name:safeName,bestScore:best,lastScore:score,updatedAt:firebase.database.ServerValue.TIMESTAMP});
+   $("submitStatus").textContent="✅ Score saved! Your leaderboard entry keeps your best score.";
+  }catch(e){$("submitStatus").textContent="Could not save score: "+e.message+" Check your database rules.";}
+ }
+ await loadBoard();$("resultBoard").innerHTML=$("leaderboard").innerHTML;
+}
+async function loadBoard(){
+ if(!firebaseReady){$("leaderboard").textContent="Leaderboard appears after Firebase is connected.";return;}
+ try{
+  const snap=await db.ref("quizScores").orderByChild("bestScore").limitToLast(20).once("value");
+  const rows=[];snap.forEach(s=>rows.push(s.val()));rows.sort((a,b)=>(Number(b.bestScore)||0)-(Number(a.bestScore)||0));
+  if(!rows.length){$("leaderboard").textContent="No scores yet. Be the first to play!";return;}
+  $("leaderboard").innerHTML=rows.map((r,i)=>`<div class="leader"><div class="rank">${i+1}</div><div class="who"><b>${escapeHtml(r.name||"Player")}</b><small>Best score</small></div><div class="points">${Number(r.bestScore)||0} pts</div></div>`).join("");
+ }catch(e){$("leaderboard").innerHTML='<span class="error">Could not load leaderboard: '+escapeHtml(e.message)+'</span>';}
+}
+$("refreshBoard").addEventListener("click",loadBoard);
+$("playAgain").addEventListener("click",()=>{show("home");});
+$("backHome").addEventListener("click",()=>show("home"));
+initFirebase();
+</script>
+</body>
+</html>
